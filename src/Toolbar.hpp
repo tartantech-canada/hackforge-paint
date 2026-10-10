@@ -10,6 +10,7 @@ namespace hackforge {
 
 enum class Tool
 {
+    Pencil,
     Stamp,
     AnglePen,
     PaintBucket
@@ -21,9 +22,12 @@ void OnToolbarSaveAs();
 void OnToolbarExit();
 void OnToolbarSetPenColor();
 void OnToolbarSetUIColor();
+void OnToolbarSetPencilTool();
 void OnToolbarSetStampTool();
 void OnToolbarSetAnglePenTool();
 void OnToolbarSetPaintBucketTool();
+void OnToolbarHorizontalFlip();
+void OnToolbarVerticalFlip();
 
 class MenuItem; // Forward declare
 class TopLevelMenuItem;
@@ -250,6 +254,7 @@ public:
     {
       TopLevelMenuItem tool;
       tool.SetLabel("Tool");
+      tool.AddChildMenuItem("Pencil", x, OnToolbarSetPencilTool);
       tool.AddChildMenuItem("Stamp", x, OnToolbarSetStampTool);
       tool.AddChildMenuItem("Angle Pen", x, OnToolbarSetAnglePenTool);
             tool.AddChildMenuItem("Bucket", x, OnToolbarSetPaintBucketTool);
@@ -262,13 +267,25 @@ public:
       x += hackforge::toolbar_top_level_menu_horizontal_spacing;
     }
     {
+        TopLevelMenuItem effect;
+        effect.SetLabel("Effect");
+        effect.AddChildMenuItem("Horizontal Flip", x, OnToolbarHorizontalFlip);
+        effect.AddChildMenuItem("Vertical Flip", x, OnToolbarVerticalFlip);
+        effect.FinishLayout(x);
+        float toolbarWidth = effect.GetWidth();
+        m_toolbarItems.push_back(effect);
+
+        x += toolbarWidth;
+        x += hackforge::toolbar_top_level_menu_horizontal_spacing;
+    }
+    {
       TopLevelMenuItem color;
-      color.SetLabel("Color");
+      color.SetLabel("Colour");
       color.AddChildMenuItem(
 #ifdef __linux__
-        "Randomize Pen Color",
+        "Randomize Pen Colour",
 #else
-        "Pen Color",
+        "Pen Colour",
 #endif
         x, OnToolbarSetPenColor);
       color.FinishLayout(x);
@@ -281,7 +298,7 @@ public:
     {
       TopLevelMenuItem view;
       view.SetLabel("View");
-      view.AddChildMenuItem("UI Color", x, OnToolbarSetUIColor);
+      view.AddChildMenuItem("UI Colour", x, OnToolbarSetUIColor);
       view.FinishLayout(x);
       float toolbarWidth = view.GetWidth();
       m_toolbarItems.push_back(view);
@@ -357,6 +374,17 @@ public:
                                     bool checkedState) {
     m_toolbarItems[toolbarIndex].SetChildMenuItemCheckedState(
         childMenuItemIndex, checkedState);
+  }
+
+  void CheckItemAndUncheckOthers(size_t toolbarIndex, size_t childMenuItemIndex)
+  {
+      size_t numChildMenuItems = m_toolbarItems[toolbarIndex].GetNumChildMenuItems();
+
+      for (size_t i = 0; i < numChildMenuItems; ++i)
+      {
+          bool checkedState = childMenuItemIndex == i;
+          m_toolbarItems[toolbarIndex].SetChildMenuItemCheckedState(i, checkedState);
+      }
   }
 };
 
